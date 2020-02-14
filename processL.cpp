@@ -5,14 +5,14 @@
 #include <fstream>
 
 #include "LogData.h"
+#include "processL.h"
 
-int main(int argc, char *argv[])
+void processL(int fd_read)
 {
         printf("ProcessL\n");
-        int fd_read_P  = atoi(argv[1]);
 
         struct LogData log_data;
-        read(fd_read_P, &log_data, log_data.getSize());
+        read(fd_read, &log_data, log_data.getSize());
 
         ofstream logfile ("logfile.txt");
         if (logfile.is_open())
@@ -21,5 +21,4 @@ int main(int argc, char *argv[])
                 logfile.close();
         }
         else cout << "Unable to open file";
-        return 0;
 }
