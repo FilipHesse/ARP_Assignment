@@ -3,5 +3,7 @@
 
 int main(int argc, char *argv[])
 {
-        printf("ProcessG\n");
+        #ifdef DEBUG_MODE
+        cout << "ProcessG started" <<endl;
+        #endif //DEBUG_MODE
 }

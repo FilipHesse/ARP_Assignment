@@ -5,11 +5,16 @@
 #include <fstream>
 
 #include "LogData.h"
-#include "processL.h"
 
-void processL(int fd_read)
+#define DEBUG_MODE_
+
+int main(int argc, char *argv[])
 {
-        printf("ProcessL\n");
+        int fd_read   = atoi(argv[1]);
+        #ifdef DEBUG_MODE
+        cout << "ProcessL started" <<endl;
+        cout << "Process L: fd_read = " << fd_read << endl;
+        #endif //DEBUG_MODE
 
         while(1)
         {
@@ -21,8 +26,8 @@ void processL(int fd_read)
                 struct timeval select_time;
                 select_time.tv_sec = 10;
                 select_time.tv_usec = 0;
-                int n;
-                cout << "Process L: fd_read = " << fd_read << endl;
+
+                struct LogData log_data;
 
                 int retval = select(fd_read+1, &fds, NULL, NULL, &select_time);
                 if (retval == -1) {
@@ -30,13 +35,14 @@ void processL(int fd_read)
                         sleep(3);
                 }
                 else if (retval) {
-                        printf("Process L: Data is available now.\n");
-                        struct LogData log_data;
-                        read(fd_read, &log_data, log_data.getSize());
-                        //cout << "ping"<<endl;
-                        cout << log_data.timestamp_.tv_sec<<endl;
 
-                        ofstream logfile ("logfile.txt");
+                        #ifdef DEBUG_MODE
+                        cout << "Process L: Data is available now" << endl;
+                        cout << log_data.timestamp_.tv_sec<<endl;
+                        #endif //DEBUG_MODE
+
+                        read(fd_read, &log_data, log_data.getSize());
+                        ofstream logfile ("logfile.txt", std::ios_base::app);
                         if (logfile.is_open())
                         {
                                 logfile << log_data.to_string();
@@ -45,7 +51,11 @@ void processL(int fd_read)
                         else cout << "Unable to open file";
                 }
                 else
+                {
+                        #ifdef DEBUG_MODE
                         printf("Process L: No data within ten seconds.\n");
+                        #endif //DEBUG_MODE
+                }
 
         }
 }

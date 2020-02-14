@@ -12,7 +12,11 @@ using namespace std;
 
 int main(int argc, char *argv[])  //(int fd_read_S, int fd_read_G, int fd_write_L)
 {
-        printf("ProcessS\n");
+        #ifdef DEBUG_MODE
+        cout << "ProcessS started" <<endl;
+        #endif //DEBUG_MODE
+
+
         while (1)
         {
                 int fd_write_P  = atoi(argv[1]);

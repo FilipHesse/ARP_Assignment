@@ -9,15 +9,10 @@
 #include <cstring>
 
 
-#include "processP.h"
-#include "processL.h"
-
-
 using namespace std;
 
-#define DEBUG_MODE
+#define DEBUG_MODE_
 // TODO //////////////////////////////////////////////////////////////
-// receive log data and write log file
 // interpret commands
 // output log file on the screen
 // calc new value to OUTPUT
@@ -123,7 +118,18 @@ int main()
                         if (forkret == 0) // Child L
                         {
                                 close(fd_P_L[1]); /* Write end is unused */
-                                processL(fd_P_L[0]);
+                                char arg0[11] = "./processL";
+                                char arg1[4];
+                                sprintf(arg1, "%d", fd_P_L[0]);
+                                char *args[3] = {arg0, arg1, NULL};
+                                //dup2(fd_S_P[1], 1); //redirect stdout to pipe
+                                //close(fd_S_P[1]);
+                                int res = execv(args[0],args);
+
+                                if (res < 0) {
+                                        perror("Execv");
+                                        return -1;
+                                }
                         }
                         else //Parent P
                         {
