@@ -50,16 +50,17 @@ bool eval_command_start_stop(char* command)
 
 int main(int argc, char *argv[])
 {
+
+        int fd_read_S   = atoi(argv[1]);
+        int fd_read_G   = atoi(argv[2]);
+        int fd_write_L  = atoi(argv[3]);
+
         #ifdef DEBUG_MODE
         cout << "ProcessP started" <<endl;
         cout << "Process P: "<< "fd_read_S =" << fd_read_S << endl;
         cout << "Process P: "<< "fd_read_G =" << fd_read_G << endl;
         cout << "Process P: "<< "fd_write_L =" << fd_write_L << endl;
         #endif //DEBUG_MODE
-
-        int fd_read_S   = atoi(argv[1]);
-        int fd_read_G   = atoi(argv[2]);
-        int fd_write_L  = atoi(argv[3]);
 
         // VALUES; THAT MUST BE CONFIGURED/MEASURED
         float dt = 1;

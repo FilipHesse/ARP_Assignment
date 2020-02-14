@@ -13,13 +13,9 @@ using namespace std;
 
 #define DEBUG_MODE_
 // TODO //////////////////////////////////////////////////////////////
-// interpret commands
-// output log file on the screen
-// calc new value to OUTPUT
 // Implement Sockets
 // Implement parametrization
 // write g-Process separately
-// exec G-Process
 // Comment, Cleanup everything!!
 /////////////////////////////////////////////////////////////////////
 

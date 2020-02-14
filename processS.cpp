@@ -21,15 +21,15 @@ int main(int argc, char *argv[])  //(int fd_read_S, int fd_read_G, int fd_write_
         {
                 int fd_write_P  = atoi(argv[1]);
 
-                string command;
+                char command[MAX_COMMAND_LENGTH];
                 cout << "Process S: Please enter a command ('start', 'stop', 'dump log'): " << std::endl;
-                cin >> command;
+                cin.getline(command,MAX_COMMAND_LENGTH);// >> command;
 
                 #ifdef DEBUG_MODE
                 cout << command << endl;
                 cout << "Process S: "<< "fd_write_P =" << fd_write_P << endl;
                 #endif //DEBUG_MODE
 
-                write(fd_write_P, command.c_str(), MAX_COMMAND_LENGTH*sizeof(char));
+                write(fd_write_P, command, MAX_COMMAND_LENGTH*sizeof(char));
         }
 }
