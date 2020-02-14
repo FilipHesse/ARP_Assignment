@@ -35,8 +35,12 @@ void send_log_data(enum LOG_TYPE log_type, char* command, float token, int fd_wr
 
 
 
-void processP(int fd_read_S, int fd_read_G, int fd_write_L)
+int main(int argc, char *argv[])
 {
+
+        int fd_read_S   = atoi(argv[1]);
+        int fd_read_G   = atoi(argv[2]);
+        int fd_write_L  = atoi(argv[3]);
   #ifdef DEBUG_MODE
         cout << "Process P: "<< "fd_read_S =" << fd_read_S << endl;
         cout << "Process P: "<< "fd_read_G =" << fd_read_G << endl;

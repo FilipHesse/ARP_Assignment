@@ -7,7 +7,7 @@
 
 #include "LogData.h"
 
-#define DEBUG_MODE
+#define DEBUG_MODE_
 using namespace std;
 
 int main(int argc, char *argv[])  //(int fd_read_S, int fd_read_G, int fd_write_L)

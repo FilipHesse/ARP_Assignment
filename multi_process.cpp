@@ -124,12 +124,28 @@ int main()
                         if (forkret == 0) // Child L
                         {
                                 close(fd_P_L[1]); /* Write end is unused */
-                                processL(fd_S_P[1]);
+                                processL(fd_P_L[0]);
                         }
                         else //Parent P
                         {
                                 // Execute ProcessP
-                                processP(fd_S_P[0], fd_G_P[0], fd_P_L[1]);
+                                // Execute ProcessP!
+                                //char arg0[11] = "./processP";
+                                char arg0[23] = "./processP";
+                                char arg1[4], arg2[4], arg3[4];
+                                sprintf(arg1, "%d", fd_S_P[0]);
+                                sprintf(arg2, "%d", fd_G_P[0]);
+                                sprintf(arg3, "%d", fd_P_L[1]);
+                                char *args[5] = {arg0, arg1, arg2, arg3, NULL};
+
+                                int res = execv(args[0],args);
+
+                                if (res < 0) {
+                                        perror("Execv");
+                                        return -1;
+                                }
+
+                                //processP(fd_S_P[0], fd_G_P[0], fd_P_L[1]);
                         }
                 }
         }
