@@ -89,8 +89,6 @@ int main()
         else //Parent P
         {
                 close(fd_S_P[1]); /* Write end is unused */
-                close(fd_G_P[1]); /* Write end is unused */
-                close(fd_P_L[0]); /* Read end is unused */
                 forkret = fork();
                 if (forkret == -1)
                 {
@@ -101,7 +99,7 @@ int main()
                         close(fd_G_P[0]); /* Read end is unused */
 
                         // Execute ProcessG!
-                        dup2(fd_G_P[1], 1); //redirect stdout to pipe
+                        //dup2(fd_G_P[1], 1); //redirect stdout to pipe
                         char arg0[11] = "./processG";
                         char *args[2] = {arg0, NULL};
 
@@ -115,6 +113,7 @@ int main()
                 }
                 else //Parent P
                 {
+                        close(fd_G_P[1]); /* Write end is unused */
 
                         forkret = fork();
                         if (forkret == -1)
@@ -128,6 +127,7 @@ int main()
                         }
                         else //Parent P
                         {
+                                close(fd_P_L[0]);             /* Read end is unused */
                                 // Execute ProcessP
                                 // Execute ProcessP!
                                 //char arg0[11] = "./processP";
