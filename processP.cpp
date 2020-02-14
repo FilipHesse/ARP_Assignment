@@ -31,6 +31,19 @@ void send_log_data(enum LOG_TYPE log_type, char* command, float token, int fd_wr
         }
 }
 
+bool eval_command_start_stop(char* command)
+{
+        if (strcmp(command,"start") ==  0)
+        {
+                return true;
+        }
+        if (strcmp(command,"stop") ==  0)
+        {
+                return false;
+        }
+
+}
+
 
 
 
@@ -48,8 +61,10 @@ int main(int argc, char *argv[])
         int fd_read_G   = atoi(argv[2]);
         int fd_write_L  = atoi(argv[3]);
 
-        char command[MAX_COMMAND_LENGTH];
-        float token;
+        // VALUES; THAT MUST BE CONFIGURED/MEASURED
+        float dt = 1;
+        float rf = 1;
+
         bool actionsActive = false;
 /* Loop forever */
         while (1) {
@@ -76,6 +91,7 @@ int main(int argc, char *argv[])
 
                         if (FD_ISSET(fd_read_S, &fds))  //read commands
                         {
+                                char command[MAX_COMMAND_LENGTH];
                                 read(fd_read_S, command, MAX_COMMAND_LENGTH*sizeof(char));
 
                                 #ifdef DEBUG_MODE
@@ -83,20 +99,16 @@ int main(int argc, char *argv[])
                                 #endif //DEBUG_MODE
 
                                 send_log_data( INPUT_S, command, NAN, fd_write_L);
-                                if (strcmp(command,"start") ==  0)
-                                {
-                                        actionsActive =true;
-                                }
-                                if (strcmp(command,"stop") ==  0)
-                                {
-                                        actionsActive =false;
-                                }
+                                actionsActive = eval_command_start_stop(command);
+
                         }
                         if (FD_ISSET(fd_read_G, &fds))
                         {
                                 if (actionsActive)
                                 {
+                                        float token;
                                         read(fd_read_G, &token, sizeof(float));
+                                        token = token + dt *(1. - token*token/2)*2*M_PI*rf;
                                         send_log_data( INPUT_G, NULL, token, fd_write_L);
                                 }
                                 else  //if not activated, still read to empty the buffer but don't use token

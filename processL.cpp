@@ -8,6 +8,19 @@
 
 #define DEBUG_MODE_
 
+void processL_readwrite(int fd_read)
+{
+        struct LogData log_data;
+        read(fd_read, &log_data, log_data.getSize());
+        ofstream logfile ("logfile.txt", std::ios_base::app);
+        if (logfile.is_open())
+        {
+                logfile << log_data.to_string();
+                logfile.close();
+        }
+        else cout << "Unable to open file";
+}
+
 int main(int argc, char *argv[])
 {
         int fd_read   = atoi(argv[1]);
@@ -27,8 +40,6 @@ int main(int argc, char *argv[])
                 select_time.tv_sec = 10;
                 select_time.tv_usec = 0;
 
-                struct LogData log_data;
-
                 int retval = select(fd_read+1, &fds, NULL, NULL, &select_time);
                 if (retval == -1) {
                         perror("select()");
@@ -41,14 +52,8 @@ int main(int argc, char *argv[])
                         cout << log_data.timestamp_.tv_sec<<endl;
                         #endif //DEBUG_MODE
 
-                        read(fd_read, &log_data, log_data.getSize());
-                        ofstream logfile ("logfile.txt", std::ios_base::app);
-                        if (logfile.is_open())
-                        {
-                                logfile << log_data.to_string();
-                                logfile.close();
-                        }
-                        else cout << "Unable to open file";
+                        //Main task of process!!
+                        processL_readwrite(fd_read);
                 }
                 else
                 {
