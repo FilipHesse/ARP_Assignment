@@ -64,13 +64,11 @@ int main(int argc, char *argv[])  //(int fd_read_S, int fd_read_G, int fd_write_
                 send_log_data( INPUT_S, command, NAN, fd_write_L);
 
 
+                int retval = select(2, &fds, NULL, NULL, &select_time);
 
-                /*
-                   int retval = select(2, &fds, NULL, NULL, &select_time);
-
-                   if (retval == -1)
+                if (retval == -1)
                         perror("select()");
-                   else if (retval) {
+                else if (retval) {
                         printf("Process P: Data is available now.\n");
 
                         if (FD_ISSET(fd_read_S, &fds))
@@ -84,9 +82,9 @@ int main(int argc, char *argv[])  //(int fd_read_S, int fd_read_G, int fd_write_
                                 n = read(fd_read_G, &token, sizeof(float));
                                 send_log_data( INPUT_G, NULL, token, fd_write_L);
                         }
-                   }
-                   else
+                }
+                else
                         printf("Process P: No data within ten seconds.\n");
-                 */
+
         }
 }

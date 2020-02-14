@@ -8,6 +8,7 @@
 
 int main(int argc, char *argv[])
 {
+        printf("ProcessL\n");
         int fd_read_P  = atoi(argv[1]);
 
         struct LogData log_data;
@@ -21,6 +22,4 @@ int main(int argc, char *argv[])
         }
         else cout << "Unable to open file";
         return 0;
-
-        printf("ProcessL\n");
 }
