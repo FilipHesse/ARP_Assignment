@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -6,9 +7,15 @@
 #include <cstring>
 #include <iostream>
 
+//For socket
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+
 #include "LogData.h"
 
-#define DEBUG_MODE_
+#define DEBUG_MODE
 using namespace std;
 
 
@@ -29,6 +36,53 @@ void send_log_data(enum LOG_TYPE log_type, char* command, float token, int fd_wr
                 strcpy(log_data.string_value_, command);
                 write(fd_write, &log_data, log_data.getSize());
         }
+}
+
+void error(const char *msg)
+{
+        perror(msg);
+        exit(0);
+}
+/**
+ * @brief Implement client to send token to a server(hostname) using portnumber portno
+ **/
+int send_over_socket(float token, const char* hostname, int portno)
+{
+        int sockfd, n;
+
+        struct sockaddr_in serv_addr;
+        struct hostent *server;
+        char buffer[256];
+        bzero(buffer,256);
+
+        sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (sockfd < 0)
+                error("ERROR opening socket");
+        server = gethostbyname(hostname);
+        if (server == NULL) {
+                fprintf(stderr,"ERROR, no such host\n");
+                exit(0);
+        }
+        bzero((char *) &serv_addr, sizeof(serv_addr));
+        serv_addr.sin_family = AF_INET;
+        bcopy((char *)server->h_addr,
+              (char *)&serv_addr.sin_addr.s_addr,
+              server->h_length);
+        serv_addr.sin_port = htons(portno);
+        if (connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0)
+                error("ERROR connecting");
+
+
+        gcvt(token,5,buffer);
+        n = write(sockfd,buffer,strlen(buffer));
+        if (n < 0)
+                error("ERROR writing to socket");
+        bzero(buffer,256);
+        n = read(sockfd,buffer,255);
+        if (n < 0)
+                error("ERROR reading from socket");
+        printf("%s\n",buffer);
+        return 0;
 }
 
 bool eval_command_start_stop(char* command)
@@ -109,8 +163,16 @@ int main(int argc, char *argv[])
                                 {
                                         float token;
                                         read(fd_read_G, &token, sizeof(float));
-                                        token = token + dt *(1. - token*token/2)*2*M_PI*rf;
                                         send_log_data( INPUT_G, NULL, token, fd_write_L);
+
+                                        #ifdef DEBUG_MODE
+                                        cout << "ProcessP: Token " << token << " received" << endl;
+                                        #endif //DEBUG_MODE
+                                        token = token + dt *(1. - token*token/2)*2*M_PI*rf;
+                                        send_over_socket(token,"localhost",5001);
+                                        send_log_data( OUTPUT, NULL, token, fd_write_L);
+
+
                                 }
                                 else  //if not activated, still read to empty the buffer but don't use token
                                 {

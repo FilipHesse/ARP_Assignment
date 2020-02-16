@@ -30,10 +30,6 @@ int create_pipe(int* fd)
         else return 0;
 }
 
-void processG(int fd_write)
-{
-        printf("ProcessG\n");
-}
 
 int main()
 {
@@ -92,7 +88,10 @@ int main()
                         // Execute ProcessG!
                         //dup2(fd_G_P[1], 1); //redirect stdout to pipe
                         char arg0[11] = "./processG";
-                        char *args[2] = {arg0, NULL};
+                        char arg1[5] = "5001";
+                        char arg2[4];
+                        sprintf(arg2, "%d", fd_G_P[1]);
+                        char *args[4] = {arg0, arg1, arg2, NULL};
 
                         int res = execv(args[0],args);
 
