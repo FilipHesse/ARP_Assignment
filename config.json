@@ -1,0 +1,11 @@
+{
+  "my_machine": {
+    "IP": "localhost",
+    "port": "50001"
+  },
+  "next_machine": {
+    "IP": "localhost",
+    "port": "50001"
+  },
+  "reference_frequency": 1
+}

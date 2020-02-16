@@ -7,7 +7,11 @@
 #include <iostream>
 #include <math.h>
 #include <cstring>
+#include <fstream>
 
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 using namespace std;
 
@@ -30,12 +34,20 @@ int create_pipe(int* fd)
         else return 0;
 }
 
+void get_serverdata_from_cfg()
+{
+        json j;
+        std::ifstream ifs("config.json");
+        json jf = json::parse(ifs);
+}
 
 int main()
 {
         int fd_S_P[2];
         int fd_G_P[2];
         int fd_P_L[2];
+
+        get_serverdata_from_cfg();
 
         if (create_pipe(fd_S_P) == -1) exit(EXIT_FAILURE);
         if (create_pipe(fd_G_P) == -1) exit(EXIT_FAILURE);
@@ -88,9 +100,9 @@ int main()
                         // Execute ProcessG!
                         //dup2(fd_G_P[1], 1); //redirect stdout to pipe
                         char arg0[11] = "./processG";
-                        char arg1[5] = "5001";
-                        char arg2[4];
-                        sprintf(arg2, "%d", fd_G_P[1]);
+                        char arg1[4];
+                        sprintf(arg1, "%d", fd_G_P[1]);
+                        char arg2[5] = "5001";
                         char *args[4] = {arg0, arg1, arg2, NULL};
 
                         int res = execv(args[0],args);

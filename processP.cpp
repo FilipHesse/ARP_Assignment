@@ -13,6 +13,8 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#include "json.hpp"
+
 #include "LogData.h"
 
 #define DEBUG_MODE

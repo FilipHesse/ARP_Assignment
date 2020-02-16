@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
         cout << "ProcessG started" <<endl;
         #endif //DEBUG_MODE
 
-        int fd_write_P  = atoi(argv[2]);
+        int fd_write_P  = atoi(argv[1]);
 
         int sockfd, newsockfd, portno, clilen, pid;
         struct sockaddr_in serv_addr, cli_addr;
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
         if (sockfd < 0)
                 error("ERROR opening socket");
         bzero((char *) &serv_addr, sizeof(serv_addr));
-        portno = atoi(argv[1]);
+        portno = atoi(argv[2]);
         serv_addr.sin_family = AF_INET;
         serv_addr.sin_addr.s_addr = INADDR_ANY;
         serv_addr.sin_port = htons(portno);
