@@ -13,7 +13,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#include "json.hpp"
+#include "cfg.h"
 
 #include "LogData.h"
 
@@ -24,27 +24,34 @@ using namespace std;
 
 void send_log_data(enum LOG_TYPE log_type, char* command, float token, int fd_write)
 {
+        cout << token<<endl;
         struct LogData log_data;
         struct timeval tv;
         int ret;
+        cout << 1<<endl;
         ret = gettimeofday (&tv, NULL);
         if (ret)
                 perror ("gettimeofday");
         else
         {
+                cout << 2<<endl;
                 log_data.timestamp_   = tv;
+                cout << 3<<endl;
                 log_data.log_type_    = log_type;
+                cout << 4<<endl;
                 log_data.float_value_  = token;
-                strcpy(log_data.string_value_, command);
-                write(fd_write, &log_data, log_data.getSize());
+                cout <<log_data.float_value_<<endl;
+                if (command != nullptr)
+                {
+                        strcpy(log_data.string_value_, command);
+                }
+                cout << 6<<endl;
+                write(fd_write, &log_data, sizeof(log_data));
         }
 }
 
-void error(const char *msg)
-{
-        perror(msg);
-        exit(0);
-}
+#define ERROR(msg) {perror(msg); return 1;}
+
 /**
  * @brief Implement client to send token to a server(hostname) using portnumber portno
  **/
@@ -59,7 +66,7 @@ int send_over_socket(float token, const char* hostname, int portno)
 
         sockfd = socket(AF_INET, SOCK_STREAM, 0);
         if (sockfd < 0)
-                error("ERROR opening socket");
+                ERROR("ERROR opening socket");
         server = gethostbyname(hostname);
         if (server == NULL) {
                 fprintf(stderr,"ERROR, no such host\n");
@@ -72,40 +79,25 @@ int send_over_socket(float token, const char* hostname, int portno)
               server->h_length);
         serv_addr.sin_port = htons(portno);
         if (connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0)
-                error("ERROR connecting");
+                ERROR("ERROR connecting");
 
 
         gcvt(token,5,buffer);
         n = write(sockfd,buffer,strlen(buffer));
         if (n < 0)
-                error("ERROR writing to socket");
+                ERROR("ERROR writing to socket");
         bzero(buffer,256);
         n = read(sockfd,buffer,255);
         if (n < 0)
-                error("ERROR reading from socket");
+                ERROR("ERROR reading from socket");
         printf("%s\n",buffer);
         return 0;
 }
 
-bool eval_command_start_stop(char* command)
-{
-        if (strcmp(command,"start") ==  0)
-        {
-                return true;
-        }
-        if (strcmp(command,"stop") ==  0)
-        {
-                return false;
-        }
-
-}
-
-
-
-
 
 int main(int argc, char *argv[])
 {
+        project_cfg cfg = get_cfg();
 
         int fd_read_S   = atoi(argv[1]);
         int fd_read_G   = atoi(argv[2]);
@@ -118,9 +110,6 @@ int main(int argc, char *argv[])
         cout << "Process P: "<< "fd_write_L =" << fd_write_L << endl;
         #endif //DEBUG_MODE
 
-        // VALUES; THAT MUST BE CONFIGURED/MEASURED
-        float dt = 1;
-        float rf = 1;
 
         bool actionsActive = false;
 /* Loop forever */
@@ -156,7 +145,7 @@ int main(int argc, char *argv[])
                                 #endif //DEBUG_MODE
 
                                 send_log_data( INPUT_S, command, NAN, fd_write_L);
-                                actionsActive = eval_command_start_stop(command);
+                                eval_command_start_stop(command, actionsActive);
 
                         }
                         if (FD_ISSET(fd_read_G, &fds))
@@ -165,13 +154,14 @@ int main(int argc, char *argv[])
                                 {
                                         float token;
                                         read(fd_read_G, &token, sizeof(float));
-                                        send_log_data( INPUT_G, NULL, token, fd_write_L);
-
                                         #ifdef DEBUG_MODE
                                         cout << "ProcessP: Token " << token << " received" << endl;
+                                        cout << "fd_write_L " << fd_write_L << endl;
                                         #endif //DEBUG_MODE
-                                        token = token + dt *(1. - token*token/2)*2*M_PI*rf;
-                                        send_over_socket(token,"localhost",5001);
+                                        send_log_data( INPUT_G, NULL, token, fd_write_L);
+
+                                        token = token + cfg.dt_ *(1. - token*token/2)*2*M_PI* cfg.reference_frequency_;
+                                        send_over_socket(token, cfg.next_machine_.IP_.c_str(), cfg.next_machine_.port_);
                                         send_log_data( OUTPUT, NULL, token, fd_write_L);
 
 

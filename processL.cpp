@@ -8,13 +8,20 @@
 
 #include "LogData.h"
 
-#define DEBUG_MODE_
+#define DEBUG_MODE
 
 
 void processL_readwrite(int fd_read)
 {
+
+
         struct LogData log_data;
-        read(fd_read, &log_data, log_data.getSize());
+        read(fd_read, &log_data, sizeof(log_data) /*.getSize()*/);
+
+        #ifdef DEBUG_MODE
+        cout << log_data.float_value_ << endl;
+        #endif //DEBUG_MODE
+
         ofstream logfile ("logfile.txt", std::ios_base::app);
 
         if (logfile.is_open())
@@ -76,7 +83,6 @@ int main(int argc, char *argv[])
 
                         #ifdef DEBUG_MODE
                         cout << "Process L: Data is available now" << endl;
-                        cout << log_data.timestamp_.tv_sec<<endl;
                         #endif //DEBUG_MODE
 
                         //Main task of process!!

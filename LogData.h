@@ -1,8 +1,10 @@
 #ifndef LOGDATA_H
 #define LOGDATA_H
 
+#include <cstring>
 #include <string>
 #include <sstream>
+
 
 using namespace std;
 
@@ -31,12 +33,7 @@ struct LogData
         enum LOG_TYPE log_type_;
         char string_value_[MAX_COMMAND_LENGTH];
         float float_value_;
-        unsigned int getSize(){
-                return sizeof(struct timeval)
-                       +sizeof(enum LOG_TYPE)
-                       +MAX_COMMAND_LENGTH*sizeof(char)
-                       +sizeof(float);
-        }
+        //float dummy_value_;
         string to_string(){
                 if (log_type_ == INPUT_G || log_type_ == INPUT_S)
                 {
@@ -46,9 +43,14 @@ struct LogData
                            << timestamp_.tv_usec
                            << " "
                            << log_type_to_string (log_type_)
-                           << " "
-                           << string_value_
-                           << std::endl;
+                           << " ";
+
+                        if (log_type_ == INPUT_G)
+                                ss<< float_value_<< std::endl;
+
+                        if (log_type_ == INPUT_S)
+                                ss<< string_value_<< std::endl;
+
                         return ss.str();
                 }
                 if (log_type_ == OUTPUT)
@@ -64,5 +66,23 @@ struct LogData
                 }
         }
 };
+
+bool eval_command_start_stop(char* command, bool& actionsActive)
+{
+        bool has_changed = false;
+        if (strcmp(command,"start") ==  0)
+        {
+                actionsActive = true;
+                has_changed = true;
+        }
+        if (strcmp(command,"stop") ==  0)
+        {
+                actionsActive = false;
+                has_changed = true;
+        }
+        return has_changed;
+
+}
+
 
 #endif // LOGDATA_H
