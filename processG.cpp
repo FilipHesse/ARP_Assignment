@@ -12,7 +12,7 @@
 
 using namespace std;
 
-void dostuff (int sock, int pipefd);
+void forward_token_to_pipe (int sock, int pipefd);
 
 void error(const char *msg)
 {
@@ -20,69 +20,96 @@ void error(const char *msg)
         exit(0);
 }
 
+/**
+ * @brief Implements a server which receives a token from the
+ *        previous computer and forwards it to the pipe (to process P)
+ **/
 int main(int argc, char *argv[])
 {
         #ifdef DEBUG_MODE
         cout << "ProcessG started" <<endl;
         #endif //DEBUG_MODE
 
-        int fd_write_P  = atoi(argv[1]);
-
-        int sockfd, newsockfd, portno, clilen, pid;
-        struct sockaddr_in serv_addr, cli_addr;
-
-        if (argc < 2) {
-                fprintf(stderr,"ERROR, no port provided\n");
+        // Check number of input arguments
+        if (argc < 3) {
+                fprintf(stderr,"ERROR! Usage: ./processG fd_of_pipe_to_p(write) portnumber");
                 exit(1);
         }
+        // parse input argument(write end of pipe to p)
+        int fd_write_P  = atoi(argv[1]);
+        int portno = atoi(argv[2]);
+
+        int sockfd, newsockfd, clilen, pid;
+        struct sockaddr_in serv_addr, cli_addr;
+
+        // Create Socket (TCP)
         sockfd = socket(AF_INET, SOCK_STREAM, 0);
         if (sockfd < 0)
                 error("ERROR opening socket");
+
+        // fill the serv_addr struct
         bzero((char *) &serv_addr, sizeof(serv_addr));
-        portno = atoi(argv[2]);
         serv_addr.sin_family = AF_INET;
-        serv_addr.sin_addr.s_addr = INADDR_ANY;
+        serv_addr.sin_addr.s_addr = INADDR_ANY; //my IP
         serv_addr.sin_port = htons(portno);
+
+        // bind socket to server adress
         if (bind(sockfd, (struct sockaddr *) &serv_addr,
                  sizeof(serv_addr)) < 0)
                 error("ERROR on binding");
+
+        // listen for connections
         listen(sockfd,5);
         clilen = sizeof(cli_addr);
+
         while (1) {
+                // Block until client connects
                 newsockfd = accept(sockfd,
                                    reinterpret_cast<struct sockaddr *> (&cli_addr),
                                    reinterpret_cast<socklen_t *>       (&clilen));
                 if (newsockfd < 0)
                         error("ERROR on accept");
+
+                // Fork for each connection
                 pid = fork();
                 if (pid < 0)
                         error("ERROR on fork");
                 if (pid == 0)  {
                         close(sockfd);
-                        dostuff(newsockfd, fd_write_P);
+                        // Do main task: Forward the token to pipe
+                        forward_token_to_pipe(newsockfd, fd_write_P);
                         exit(0);
                 }
                 else close(newsockfd);
-        }         /* end of while */
-        return 0;         /* we never get here */
+        }
+        return 0;
 }
 
-/******** DOSTUFF() *********************
-   There is a separate instance of this function
-   for each connection.  It handles all communication
-   once a connnection has been established.
- *****************************************/
-void dostuff (int sock, int pipefd)
+/**
+ * @brief Main task: read token and forward it to pipe
+ **/
+void forward_token_to_pipe (int sock, int pipefd)
 {
         int n;
         char buffer[256];
-
         bzero(buffer,256);
+
+        //read socket
         n = read(sock,buffer,255);
-        float token = atof(buffer);
-        write(pipefd, &token, sizeof(float ));
         if (n < 0) error("ERROR reading from socket");
-        printf("Here is the message: %s\n",buffer);
+
+        #ifdef DEBUG
+        cout << "Here is the message: " << buffer;
+        #endif
+
+        // write answer to client
         n = write(sock,"I got your message",18);
         if (n < 0) error("ERROR writing to socket");
+
+        // directly convert token to float (from char array)
+        float token = atof(buffer);
+
+        // wirte token to pipe
+        write(pipefd, &token, sizeof(float ));
+
 }
