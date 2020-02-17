@@ -17,7 +17,7 @@
 
 #include "LogData.h"
 
-#define DEBUG_MODE
+#define DEBUG_MODE_
 using namespace std;
 
 

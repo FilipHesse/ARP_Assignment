@@ -8,7 +8,7 @@
 
 #include "LogData.h"
 
-#define DEBUG_MODE
+#define DEBUG_MODE_
 
 
 void processL_readwrite(int fd_read)
