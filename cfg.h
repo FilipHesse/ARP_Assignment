@@ -43,6 +43,9 @@ project_cfg(string my_IP_addr, unsigned int my_port, string next_IP_addr, unsign
 
 };
 
+/**
+ * @brief reads cfg using json parser (COPYRIGHT:see License file, by nlohman )
+ **/
 project_cfg get_cfg()
 {
         std::ifstream ifs("config.json");
