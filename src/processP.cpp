@@ -164,8 +164,6 @@ int main(int argc, char *argv[])
                 // Select reading from two pipes (pipe from S, pipe from G)
                 int retval = select(fd_read_G+1, &fds, NULL, NULL, &select_time);
 
-                //int retval = select(fd_read_G+1, &fds, NULL, NULL, NULL);
-
                 if (retval == -1)
                         perror("select()");
                 else if (retval) {
