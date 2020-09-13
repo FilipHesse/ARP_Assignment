@@ -23,8 +23,9 @@ void processL_readwrite(int fd_read)
         cout << log_data.float_value_ << endl;
         #endif //DEBUG_MODE
 
-        // open logfile.txt in append mode
-        ofstream logfile ("log/logfile.txt", std::ios_base::app);
+        // open log/logfile.txt in append mode
+        std::string logfilename = "log/logfile.txt";
+        ofstream logfile (logfilename, std::ios_base::app);
         if (logfile.is_open())
         {
                 // Write struct to file using log_data memberfunction to_string()
@@ -41,7 +42,7 @@ void processL_readwrite(int fd_read)
                 cout << "(1) Commands from shell:" << endl;
 
                 //Now only write the lines which contain string "from S"
-                std::ifstream firstread( "logfile.txt" );
+                std::ifstream firstread( logfilename );
                 // Go through each line
                 for( std::string line; getline( firstread, line ); )
                 {
@@ -52,7 +53,7 @@ void processL_readwrite(int fd_read)
                 cout << "(2) Tokens:" << endl;
 
                 //Now only write the lines which DO NOT contain string "from S"
-                std::ifstream secondread( "logfile.txt" );
+                std::ifstream secondread( logfilename );
                 // Go through each line again
                 for( std::string line; getline( secondread, line ); )
                 {

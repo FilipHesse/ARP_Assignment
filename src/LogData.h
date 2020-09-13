@@ -23,7 +23,7 @@ string log_type_to_string(enum LOG_TYPE log_type)
         {
         case INPUT_G: return "from G";
         case INPUT_S: return "from S";
-        case OUTPUT: return "output";
+        case OUTPUT: return "to G";
         default:
                 {
                 stringstream ss;
@@ -65,6 +65,8 @@ struct LogData
                         ss << timestamp_.tv_sec
                            << "."
                            << timestamp_.tv_usec
+                           << " "
+                           << log_type_to_string (log_type_)
                            << " "
                            << float_value_
                            << std::endl;
