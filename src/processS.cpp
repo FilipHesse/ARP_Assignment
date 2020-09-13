@@ -8,7 +8,7 @@
 
 #include "LogData.h"
 
-#define DEBUG_MODE_
+#define DEBUG_MODE
 using namespace std;
 
 /**

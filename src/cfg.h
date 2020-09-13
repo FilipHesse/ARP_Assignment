@@ -48,7 +48,7 @@ project_cfg(string my_IP_addr, unsigned int my_port, string next_IP_addr, unsign
  **/
 project_cfg get_cfg()
 {
-        std::ifstream ifs("config.json");
+        std::ifstream ifs("cfg/config.json");
         json j = json::parse(ifs);
 
         project_cfg cfg(j["/my_machine/IP"_json_pointer],

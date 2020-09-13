@@ -17,7 +17,7 @@
 
 #include "LogData.h"
 
-#define DEBUG_MODE_
+#define DEBUG_MODE
 using namespace std;
 
 
@@ -107,7 +107,7 @@ int send_over_socket(float token, const char* hostname, int portno)
 }
 
 /**
- * @brief Creates a file descritor set (just to clean up the code)
+ * @brief Creates a file descriptor set (just to clean up the code)
  **/
 fd_set create_fd_set(int fd1, int fd2)
 {
@@ -161,7 +161,9 @@ int main(int argc, char *argv[])
                 struct timeval select_time = create_timeval(10,0); //Waiting time for select()
 
                 // Select reading from two pipes (pipe from S, pipe from G)
-                int retval = select(fd_read_G+1, &fds, NULL, NULL, &select_time);
+                //int retval = select(fd_read_G+1, &fds, NULL, NULL, &select_time);
+
+                int retval = select(fd_read_G+1, &fds, NULL, NULL, NULL);
 
                 if (retval == -1)
                         perror("select()");
