@@ -126,6 +126,7 @@ struct timeval create_timeval(int sec,int usec)
         struct timeval select_time;
         select_time.tv_sec = sec;
         select_time.tv_usec = usec;
+        return select_time;
 }
 
 /**
@@ -161,9 +162,9 @@ int main(int argc, char *argv[])
                 struct timeval select_time = create_timeval(10,0); //Waiting time for select()
 
                 // Select reading from two pipes (pipe from S, pipe from G)
-                //int retval = select(fd_read_G+1, &fds, NULL, NULL, &select_time);
+                int retval = select(fd_read_G+1, &fds, NULL, NULL, &select_time);
 
-                int retval = select(fd_read_G+1, &fds, NULL, NULL, NULL);
+                //int retval = select(fd_read_G+1, &fds, NULL, NULL, NULL);
 
                 if (retval == -1)
                         perror("select()");

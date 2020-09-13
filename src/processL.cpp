@@ -24,7 +24,7 @@ void processL_readwrite(int fd_read)
         #endif //DEBUG_MODE
 
         // open logfile.txt in append mode
-        ofstream logfile ("logfile.txt", std::ios_base::app);
+        ofstream logfile ("log/logfile.txt", std::ios_base::app);
         if (logfile.is_open())
         {
                 // Write struct to file using log_data memberfunction to_string()
