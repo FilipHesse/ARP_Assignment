@@ -24,6 +24,12 @@ string log_type_to_string(enum LOG_TYPE log_type)
         case INPUT_G: return "from G";
         case INPUT_S: return "from S";
         case OUTPUT: return "output";
+        default:
+                {
+                stringstream ss;
+                ss << "Error in log_type_to_string: Invalid log type" << log_type; 
+                return ss.str();
+                }
         }
 }
 
@@ -53,7 +59,7 @@ struct LogData
 
                         return ss.str();
                 }
-                if (log_type_ == OUTPUT)
+                else if (log_type_ == OUTPUT)
                 {
                         std::stringstream ss;
                         ss << timestamp_.tv_sec
@@ -63,6 +69,12 @@ struct LogData
                            << float_value_
                            << std::endl;
                         return ss.str();
+                }
+                else
+                {
+                        stringstream ss;
+                        ss << "Error in LogData::to_string(): Invalid log type" << log_type_; 
+                        return ss.str(); 
                 }
         }
 };
