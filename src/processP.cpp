@@ -20,6 +20,15 @@
 #define DEBUG_MODE
 using namespace std;
 
+float rising_sine(float token, float dt, float rf)
+{
+        return token + dt *(1. - token*token/2)*2*M_PI* rf;
+}
+
+float falling_sine(float token,float  dt,float  rf)
+{
+        return token - dt *(1. - token*token/2)*2*M_PI* rf;
+}
 
 /**
  * @brief Sends struct of data to process L for logging
@@ -154,10 +163,9 @@ int main(int argc, char *argv[])
         #endif //DEBUG_MODE
 
         bool actionsActive = false;
+        float previous_token = nanf("0");
 /* Loop forever */
         while (1) {
-
-
                 fd_set fds = create_fd_set(fd_read_S, fd_read_G);   //File descriptor set for select()
                 struct timeval select_time = create_timeval(10,0); //Waiting time for select()
 
@@ -191,8 +199,12 @@ int main(int argc, char *argv[])
                                 if (actionsActive)  // only if "start" has been sent before
                                 {
                                         //read from pipe
-                                        float token;
+                                        float token, new_token;
                                         read(fd_read_G, &token, sizeof(float));
+
+                                        //Initialize the previous token as a little bit smaller than the current one
+                                        if (isnan(previous_token))
+                                                previous_token = token - 0.01;
 
                                         #ifdef DEBUG_MODE
                                         cout << "ProcessP: Token " << token << " received" << endl;
@@ -203,15 +215,20 @@ int main(int argc, char *argv[])
                                         send_log_data( INPUT_G, NULL, token, fd_write_L);
 
                                         // Make calculations with token
-                                        token = token + cfg.dt_ *(1. - token*token/2)*2*M_PI* cfg.reference_frequency_;
-
+                                        if (token == -1)
+                                                new_token = rising_sine(token, cfg.dt_, cfg.reference_frequency_);
+                                        else if (token == 1)
+                                                new_token = falling_sine(token, cfg.dt_, cfg.reference_frequency_);
+                                        else if (previous_token < token)
+                                                new_token = rising_sine(token, cfg.dt_, cfg.reference_frequency_);
+                                        else
+                                                new_token = falling_sine(token, cfg.dt_, cfg.reference_frequency_);
                                         // Send modified token to next machine using socket
-                                        send_over_socket(token, cfg.next_machine_.IP_.c_str(), cfg.next_machine_.port_);
-
+                                        send_over_socket(new_token, cfg.next_machine_.IP_.c_str(), cfg.next_machine_.port_);
                                         // send Log info to L with sent token
-                                        send_log_data( OUTPUT, NULL, token, fd_write_L);
+                                        send_log_data( OUTPUT, NULL, new_token, fd_write_L);
 
-
+                                        previous_token = token;
                                 }
                                 else  //if not activated, still read to empty the buffer but don't use token
                                 {
