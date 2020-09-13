@@ -1,11 +1,11 @@
 {
   "my_machine": {
     "IP": "localhost",
-    "port": 70002
+    "port": 7002
   },
   "next_machine": {
     "IP": "localhost",
-    "port": 50002
+    "port": 7002
   },
   "dt": 0.000744,
   "reference_frequency": 1
