@@ -2,6 +2,7 @@
 #include <string>
 #include <iomanip>
 #include <cmath>
+#include <stdio.h>
 
 class TokenForSending
 {
@@ -17,14 +18,34 @@ public:
     
     TokenForSending(char* cp)
     {
-        std::stringstream imput_str(cp);
-        std::string token_str, timestamp_str;
-        std::getline(imput_str, token_str, '_');
-        std::getline(imput_str, timestamp_str, '_');
+        std::stringstream input_str(cp);
+        std::string token_str, timestamp_sec_str, timestamp_usec_str;
+        if (std::getline(input_str, token_str, ',') )
+        {
+            std::cout << "token_str: " << token_str;
+            token_ = stod(token_str);
+        }
 
-        token_ = stof(token_str);
-        timestamp_.tv_sec = int(stod(timestamp_str));
-        timestamp_.tv_usec = int(std::fmod((stod(timestamp_str)*1e6),1e6));
+        if (std::getline(input_str, timestamp_sec_str, '.') )
+        {
+            std::cout << "timestamp_sec_str: " << timestamp_sec_str;
+            timestamp_.tv_sec =  stoi(timestamp_sec_str);//int(stod(timestamp_str));
+        }
+        else
+        {
+            timestamp_.tv_sec = 0;
+        }
+        
+
+        if (std::getline(input_str, timestamp_usec_str, '.') )
+        {
+            std::cout << "timestamp_usec_str: " << timestamp_usec_str;
+            timestamp_.tv_usec =  stoi(timestamp_usec_str);//int(stod(timestamp_str));
+        }
+        else
+        {
+            timestamp_.tv_usec = 0;   
+        }
     }
 
     void getCharArray(char* cp)
