@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
                                         else
                                                 new_token = falling_sine(token, cfg.dt_, cfg.reference_frequency_);
 
-                                        usleep(10000);
+                                        usleep(cfg.dt_*1e6);
                                         // Send modified token to next machine using socket
                                         send_over_socket(new_token, cfg.next_machine_.IP_.c_str(), cfg.next_machine_.port_);
                                         // send Log info to L with sent token
