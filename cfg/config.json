@@ -8,5 +8,5 @@
     "port": 7002
   },
   "dt": 0.01,
-  "reference_frequency": 1
+  "reference_frequency": 0.01
 }

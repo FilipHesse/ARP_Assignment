@@ -10,6 +10,8 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#include "TokenStruct.h"
+
 using namespace std;
 
 void forward_token_to_pipe (int sock, int pipefd);
@@ -106,10 +108,7 @@ void forward_token_to_pipe (int sock, int pipefd)
         n = write(sock,"I got your message",18);
         if (n < 0) error("ERROR writing to socket");
 
-        // directly convert token to float (from char array)
-        float token = atof(buffer);
-
-        // wirte token to pipe
-        write(pipefd, &token, sizeof(float ));
+        // write buffer to pipe
+        write(pipefd, buffer, 256);
 
 }

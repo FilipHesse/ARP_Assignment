@@ -16,6 +16,7 @@
 #include "cfg.h"
 
 #include "LogData.h"
+#include "TokenStruct.h"
 
 #define DEBUG_MODE
 using namespace std;
@@ -35,25 +36,18 @@ float falling_sine(float token,float  dt,float  rf)
  *
  *   Gets a the current time value as the timestamp
  **/
-void send_log_data(enum LOG_TYPE log_type, char* command, float token, int fd_write)
+void send_log_data(enum LOG_TYPE log_type, char* command, float token, int fd_write, struct timeval tv)
 {
         struct LogData log_data;
-        struct timeval tv;
 
-        int ret = gettimeofday (&tv, NULL);
-        if (ret)
-                perror ("gettimeofday");
-        else
-        {
-                log_data.timestamp_   = tv;
-                log_data.log_type_    = log_type;
-                log_data.float_value_  = token;
-                if (command != nullptr)
-                        strcpy(log_data.string_value_, command);
+        log_data.timestamp_   = tv;
+        log_data.log_type_    = log_type;
+        log_data.float_value_  = token;
+        if (command != nullptr)
+                strcpy(log_data.string_value_, command);
 
-                //write to pipe
-                write(fd_write, &log_data, sizeof(log_data));
-        }
+        //write to pipe
+        write(fd_write, &log_data, sizeof(log_data));
 }
 
 #define ERROR(msg) {perror(msg); return 1;}
@@ -61,8 +55,11 @@ void send_log_data(enum LOG_TYPE log_type, char* command, float token, int fd_wr
 /**
  * @brief Implement client to send token to a server(hostname) using portnumber portno
  **/
-int send_over_socket(float token, const char* hostname, int portno)
+int send_over_socket(float token, struct timeval tv, const char* hostname, int portno)
 {
+        // create class of token and time
+        TokenForSending tok_send(token,tv);
+
         int sockfd, n;
 
         struct sockaddr_in serv_addr;
@@ -92,8 +89,8 @@ int send_over_socket(float token, const char* hostname, int portno)
         if (connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0)
                 ERROR("ERROR connecting");
 
-        // Convert token with 5 decimals to c-string (in buffer)
-        gcvt(token,5,buffer);
+        //Get Object of token and time as char array
+        tok_send.getCharArray(buffer);
 
         // Write to socket
         n = write(sockfd,buffer,strlen(buffer));
@@ -173,6 +170,8 @@ int main(int argc, char *argv[])
                 // Select reading from two pipes (pipe from S, pipe from G)
                 int retval = select(fd_read_G+1, &fds, NULL, NULL, &select_time);
 
+                struct timeval tv;
+
                 if (retval == -1)
                         perror("select()");
                 else if (retval) {
@@ -191,7 +190,8 @@ int main(int argc, char *argv[])
                                 cout << "ProcessP: Command " << command << " received" << endl;
                                 #endif //DEBUG_MODE
 
-                                send_log_data( INPUT_S, command, NAN, fd_write_L);
+                                gettimeofday (&tv, NULL);
+                                send_log_data( INPUT_S, command, NAN, fd_write_L, tv);
                                 eval_command_start_stop(command, actionsActive);
 
                         }
@@ -201,8 +201,13 @@ int main(int argc, char *argv[])
                                 {
                                         //read from pipe
                                         float token, new_token;
-                                        read(fd_read_G, &token, sizeof(float));
-
+                                        char buffer[256];
+                                        cout << "bli";
+                                        read(fd_read_G, buffer, 256);
+                                        cout << "bla";
+                                        TokenForSending received_token_object(buffer);
+                                        token = received_token_object.token_;
+                                        struct timeval last_time = received_token_object.timestamp_;
                                         //Initialize the previous token as a little bit smaller than the current one
                                         if (isnan(previous_token))
                                                 previous_token = token - 0.01;
@@ -213,7 +218,8 @@ int main(int argc, char *argv[])
                                         #endif //DEBUG_MODE
 
                                         // send Log info to L with received token
-                                        send_log_data( INPUT_G, NULL, token, fd_write_L);
+                                        gettimeofday (&tv, NULL);
+                                        send_log_data( INPUT_G, NULL, token, fd_write_L, tv);
 
                                         // Make calculations with token
                                         if (token <= -1)
@@ -225,11 +231,12 @@ int main(int argc, char *argv[])
                                         else
                                                 new_token = falling_sine(token, cfg.dt_, cfg.reference_frequency_);
 
+                                        gettimeofday (&tv, NULL);
                                         usleep(cfg.dt_*1e6);
                                         // Send modified token to next machine using socket
-                                        send_over_socket(new_token, cfg.next_machine_.IP_.c_str(), cfg.next_machine_.port_);
+                                        send_over_socket(new_token, tv, cfg.next_machine_.IP_.c_str(), cfg.next_machine_.port_);
                                         // send Log info to L with sent token
-                                        send_log_data( OUTPUT, NULL, new_token, fd_write_L);
+                                        send_log_data( OUTPUT, NULL, new_token, fd_write_L, tv);
 
                                         previous_token = token;
                                 }
