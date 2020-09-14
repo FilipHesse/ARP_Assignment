@@ -22,13 +22,13 @@ public:
         std::string token_str, timestamp_sec_str, timestamp_usec_str;
         if (std::getline(input_str, token_str, ',') )
         {
-            std::cout << "token_str: " << token_str;
+            //std::cout << "token_str: " << token_str << std::endl;
             token_ = stod(token_str);
         }
 
         if (std::getline(input_str, timestamp_sec_str, '.') )
         {
-            std::cout << "timestamp_sec_str: " << timestamp_sec_str;
+            //std::cout << "timestamp_sec_str: " << timestamp_sec_str  << std::endl;
             timestamp_.tv_sec =  stoi(timestamp_sec_str);//int(stod(timestamp_str));
         }
         else

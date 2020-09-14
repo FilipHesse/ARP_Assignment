@@ -202,9 +202,7 @@ int main(int argc, char *argv[])
                                         //read from pipe
                                         float token, new_token;
                                         char buffer[256];
-                                        cout << "bli";
                                         read(fd_read_G, buffer, 256);
-                                        cout << "bla";
                                         TokenForSending received_token_object(buffer);
                                         token = received_token_object.token_;
                                         struct timeval last_time = received_token_object.timestamp_;
@@ -221,15 +219,26 @@ int main(int argc, char *argv[])
                                         gettimeofday (&tv, NULL);
                                         send_log_data( INPUT_G, NULL, token, fd_write_L, tv);
 
+                                        struct timeval time_since_last_computation;
+                                        timersub(&tv, &received_token_object.timestamp_, &time_since_last_computation);
+                                        float seconds_since_last_computation = time_since_last_computation.tv_sec + time_since_last_computation.tv_usec/1e6;
+
+                                        //Debug: If timestamp of received token == 0 (first value), then set seconds_since_last_computation to cfg.dt
+                                        if (received_token_object.timestamp_.tv_sec == 0)
+                                                seconds_since_last_computation = cfg.dt_;
+
+                                        #ifdef DEBUG_MODE
+                                        cout << "seconds since last computation" << seconds_since_last_computation << endl;
+                                        #endif
                                         // Make calculations with token
                                         if (token <= -1)
-                                                new_token = rising_sine(token, cfg.dt_, cfg.reference_frequency_);
+                                                new_token = rising_sine(token, seconds_since_last_computation, cfg.reference_frequency_);
                                         else if (token >= 1)
-                                                new_token = falling_sine(token, cfg.dt_, cfg.reference_frequency_);
+                                                new_token = falling_sine(token, seconds_since_last_computation, cfg.reference_frequency_);
                                         else if (previous_token < token)
-                                                new_token = rising_sine(token, cfg.dt_, cfg.reference_frequency_);
+                                                new_token = rising_sine(token, seconds_since_last_computation, cfg.reference_frequency_);
                                         else
-                                                new_token = falling_sine(token, cfg.dt_, cfg.reference_frequency_);
+                                                new_token = falling_sine(token, seconds_since_last_computation, cfg.reference_frequency_);
 
                                         gettimeofday (&tv, NULL);
                                         usleep(cfg.dt_*1e6);
