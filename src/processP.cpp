@@ -112,6 +112,7 @@ int send_over_socket(float token, const char* hostname, int portno)
         cout << buffer << endl;
         #endif //DEBUG_MODE
 
+        close(sockfd);
         return 0;
 }
 
@@ -215,14 +216,16 @@ int main(int argc, char *argv[])
                                         send_log_data( INPUT_G, NULL, token, fd_write_L);
 
                                         // Make calculations with token
-                                        if (token == -1)
+                                        if (token <= -1)
                                                 new_token = rising_sine(token, cfg.dt_, cfg.reference_frequency_);
-                                        else if (token == 1)
+                                        else if (token >= 1)
                                                 new_token = falling_sine(token, cfg.dt_, cfg.reference_frequency_);
                                         else if (previous_token < token)
                                                 new_token = rising_sine(token, cfg.dt_, cfg.reference_frequency_);
                                         else
                                                 new_token = falling_sine(token, cfg.dt_, cfg.reference_frequency_);
+
+                                        usleep(10000);
                                         // Send modified token to next machine using socket
                                         send_over_socket(new_token, cfg.next_machine_.IP_.c_str(), cfg.next_machine_.port_);
                                         // send Log info to L with sent token
