@@ -39,7 +39,7 @@ public:
 
         if (std::getline(input_str, timestamp_usec_str, '.') )
         {
-            std::cout << "timestamp_usec_str: " << timestamp_usec_str;
+            //std::cout << "timestamp_usec_str: " << timestamp_usec_str;
             timestamp_.tv_usec =  stoi(timestamp_usec_str);//int(stod(timestamp_str));
         }
         else

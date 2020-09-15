@@ -1,0 +1,1 @@
+rm log/logfile.txt

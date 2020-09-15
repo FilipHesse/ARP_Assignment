@@ -21,17 +21,25 @@
 #include <cmath>
 #include <ctgmath>
 
-#define DEBUG_MODE
+#define DEBUG_MODE_
 using namespace std;
 
+/**
+ * @brief compute sine wave when its rising
+ * 
+ * Original formula given in the task did not work properly, a new formula was deduced manually
+ **/
 float rising_sine(float token, float dt, float rf)
-{
+{                                  //plus
         return token*cos(2*M_PI*rf*dt)+sqrtf(1-token*token)*sin(2*M_PI*rf*dt);
         //return token + dt *(1. - token*token/2)*2*M_PI* rf;
 }
 
+/**
+ * @brief compute sine wave when its falling
+ **/
 float falling_sine(float token,float  dt,float  rf)
-{
+{                                  //minus
         return token*cos(2*M_PI*rf*dt)-sqrtf(1-token*token)*sin(2*M_PI*rf*dt);
         //return token - dt *(1. - token*token/2)*2*M_PI* rf;
 }
@@ -167,6 +175,7 @@ int main(int argc, char *argv[])
 
         bool actionsActive = false;
         float previous_token = nanf("0");
+        int i= 0;
 /* Loop forever */
         while (1) {
                 fd_set fds = create_fd_set(fd_read_S, fd_read_G);   //File descriptor set for select()
@@ -176,6 +185,7 @@ int main(int argc, char *argv[])
                 int retval = select(fd_read_G+1, &fds, NULL, NULL, &select_time);
 
                 struct timeval tv;
+
 
                 if (retval == -1)
                         perror("select()");
@@ -191,9 +201,8 @@ int main(int argc, char *argv[])
                                 char command[MAX_COMMAND_LENGTH];
                                 read(fd_read_S, command, MAX_COMMAND_LENGTH*sizeof(char));
 
-                                #ifdef DEBUG_MODE
                                 cout << "ProcessP: Command " << command << " received" << endl;
-                                #endif //DEBUG_MODE
+                                cout << "Waiting for initial token to be processed" << endl;
 
                                 gettimeofday (&tv, NULL);
                                 send_log_data( INPUT_S, command, NAN, fd_write_L, tv);
@@ -228,6 +237,11 @@ int main(int argc, char *argv[])
                                         timersub(&tv, &received_token_object.timestamp_, &time_since_last_computation);
                                         float seconds_since_last_computation = time_since_last_computation.tv_sec + time_since_last_computation.tv_usec/1e6;
 
+                                        // output dots to show it is running
+                                        i++;
+                                        if (i%10==0)
+                                                cout << '.' << std::flush;
+
                                         //Debug: If timestamp of received token == 0 (first value), then set seconds_since_last_computation to cfg.dt
                                         if (received_token_object.timestamp_.tv_sec == 0)
                                                 seconds_since_last_computation = cfg.dt_;
@@ -236,16 +250,19 @@ int main(int argc, char *argv[])
                                         cout << "seconds since last computation" << seconds_since_last_computation << endl;
                                         #endif
                                         // Make calculations with token
-                                        if (token <= -1)
+                                        // Find out, if the sine wave is falling or rising at the moment
+                                        if (token <= -1) //rise if token smaller equal -1
                                                 new_token = rising_sine(token, seconds_since_last_computation, cfg.reference_frequency_);
-                                        else if (token >= 1)
+                                        else if (token >= 1) // fall if token greater equal one
                                                 new_token = falling_sine(token, seconds_since_last_computation, cfg.reference_frequency_);
-                                        else if (previous_token < token)
+                                        else if (previous_token < token) // rise if previous token (computed by this process) was smaller than the current one
+                                                                        // For multiple machines connected together, this will only work if there are many computed points per one sine wave
                                                 new_token = rising_sine(token, seconds_since_last_computation, cfg.reference_frequency_);
-                                        else
+                                        else    //fall if previous token greater than current one
                                                 new_token = falling_sine(token, seconds_since_last_computation, cfg.reference_frequency_);
-
                                         gettimeofday (&tv, NULL);
+                                        if (last_time.tv_sec != tv.tv_sec)
+                                                cout << '.';
                                         usleep(cfg.dt_*1e6);
                                         // Send modified token to next machine using socket
                                         send_over_socket(new_token, tv, cfg.next_machine_.IP_.c_str(), cfg.next_machine_.port_);

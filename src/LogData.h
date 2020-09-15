@@ -4,6 +4,8 @@
 #include <cstring>
 #include <string>
 #include <sstream>
+#include <ios>
+#include <iomanip>
 
 
 using namespace std;
@@ -45,9 +47,10 @@ struct LogData
                 {
                         std::stringstream ss;
                         ss << timestamp_.tv_sec
-                           << "."
-                           << timestamp_.tv_usec
-                           << " "
+                           << ".";
+                        ss << std::setfill('0') << std::setw(6) << timestamp_.tv_usec; //Force the usec integer to have 6 digits so the final output in the string will be a float number of seconds.useconds 
+                        ss << std::setfill(' ');
+                        ss  << " "
                            << log_type_to_string (log_type_)
                            << " ";
 
@@ -61,11 +64,12 @@ struct LogData
                 }
                 else if (log_type_ == OUTPUT)
                 {
-                        std::stringstream ss;
+                        std::ostringstream ss;
                         ss << timestamp_.tv_sec
-                           << "."
-                           << timestamp_.tv_usec
-                           << " "
+                           << ".";
+                        ss << std::setfill('0') << std::setw(6) << timestamp_.tv_usec; //Force the usec integer to have 6 digits so the final output in the string will be a float number of seconds.useconds 
+                        ss << std::setfill(' ');
+                        ss << " "
                            << log_type_to_string (log_type_)
                            << " "
                            << float_value_

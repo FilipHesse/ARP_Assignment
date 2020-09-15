@@ -1,2 +1,2 @@
 echo Type the value of the initial token
-nc localhost 7002
+nc localhost 7004
