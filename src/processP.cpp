@@ -18,17 +18,22 @@
 #include "LogData.h"
 #include "TokenStruct.h"
 
+#include <cmath>
+#include <ctgmath>
+
 #define DEBUG_MODE
 using namespace std;
 
 float rising_sine(float token, float dt, float rf)
 {
-        return token + dt *(1. - token*token/2)*2*M_PI* rf;
+        return token*cos(2*M_PI*rf*dt)+sqrtf(1-token*token)*sin(2*M_PI*rf*dt);
+        //return token + dt *(1. - token*token/2)*2*M_PI* rf;
 }
 
 float falling_sine(float token,float  dt,float  rf)
 {
-        return token - dt *(1. - token*token/2)*2*M_PI* rf;
+        return token*cos(2*M_PI*rf*dt)-sqrtf(1-token*token)*sin(2*M_PI*rf*dt);
+        //return token - dt *(1. - token*token/2)*2*M_PI* rf;
 }
 
 /**
